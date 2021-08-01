@@ -1,0 +1,153 @@
+\documentclass[a4paper]{article}\usepackage[utf8]{inputenc}
+\usepackage{graphicx}
+\usepackage{fontspec}
+
+% Define your paper size
+\def\realpaperwidth{4in}
+\def\realpaperheight{2.5in}
+
+% Define your paper size after cutting
+\def\cutpaperwidth{3.3in}
+\def\cutpaperheight{1.8in}
+
+% Define your background image, which should include the overlap
+\def\backgroundwidth{3.5in}
+\def\backgroundheight{2.0in}
+% Attention: If the height doesn't fit to the width, it will cause distortion.
+
+% Define the area, in which the name text should appear
+\def\textboxwidth{2.5in}
+\def\textboxheight{2in}
+% Want to adjust the vertical text position, do it here
+\def\vnameoffset{0pt}
+
+% Font type and color
+\setmainfont{Playfair Display}
+\def\selectedfontsize{Huge}
+\usepackage{color}
+\definecolor{Fontcolor}{rgb}{0.572,0.525,0.396} % r,g,b values from 0 to 1
+
+% Change nothing here
+\usepackage[%
+paperwidth=\cutpaperwidth,%
+paperheight=\cutpaperheight,%
+margin=0in
+]{geometry}
+
+% Adjust here, which driver you use. Currently LuaLaTeX is chosen. Most people use pdflatex, but I recommend LuaLaTeX for this, because of the file encoding and font choice. Just uncomment the one, you use and comment out lualatex.
+\usepackage[%
+width=\realpaperwidth,
+height=\realpaperheight,
+landscape,
+cam,
+axes,
+noinfo,
+%dvips,
+%pdftex,
+%pdflatex,
+%luatex,
+lualatex,
+%vtex,
+%nodriver
+center]{crop}
+
+% Fix the page size and everything
+\textheight=\cutpaperheight
+\textwidth=\cutpaperwidth
+\leftmargin=0pt
+
+
+%%%%%%%%%%%%
+%You're done
+%%%%%%%%%%%%
+
+
+% Simple fix for the indent at every new paragraph, which we don't need here.
+\setlength{\parindent}{0pt}
+
+
+%Personal chopline command, stolen from https://de.wikibooks.org/wiki/LaTeX-W%C3%B6rterbuch:_Serienbrief_mit_externen_Daten
+\def\chopline#1;#2;#3 \\{
+\def\nametitle{#1}
+\def\prename{#2}
+\def\surname{#3}
+}
+ 
+\newif\ifmore \moretrue
+ 
+
+%\inputencoding{latin9} % not needed, if you use LuaLaTeX
+\newread\quelle
+\openin\quelle=addresses.csv %Here we get the addresses from
+%\inputencoding{utf8} % not needed, if you use LuaLaTeX
+
+
+\begin{document}
+\pagenumbering{gobble}% no page numbering
+\loop
+\read\quelle to\zeile
+\ifeof\quelle
+\global\morefalse
+\else{%
+\expandafter\chopline\zeile\\%
+\newpage% automatically ignored for first page
+\hfill\hspace*{-0.75in}% prevent overfull boxes
+\parbox[c][\cutpaperheight][c]{\cutpaperwidth}{% a box for the whole page content, to fit it more easily
+\vskip -0.5in plus 1fill minus 1fill\relax% prevent overfull and center
+\hfill\hspace*{-0.5in}% prevent overfull and center
+\mbox{% prevent line break
+\parbox[c][\backgroundheight][c]{\backgroundwidth}{% box to center the background image
+\mbox{}\hspace*{-0.5in}\hfill% prevent overfull and center
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+% Here you might need to adjust the parameters of includegraphics
+% Note also the \textit command, that switches to italic text. You can change it.
+%
+\includegraphics[%
+width=\backgroundwidth,%
+height=\backgroundheight,%
+page=2,%
+]{background.pdf}%
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+\hfill\hspace*{-0.5in}\mbox{}% prevent overfull and center
+}% parbox background image
+\hspace*{-\backgroundwidth}% make text appear on top of background
+\parbox[c][\backgroundheight][c]{\backgroundwidth}{% helper box to fit text on background
+\mbox{}\vskip -2.4em\relax\mbox{}% compensate for empty lines caused by mbox, which is needed to suppress skip suppression = force skips to appear
+\vskip \dimexpr\vnameoffset\relax\mbox{}% adjust the text position vertically
+\begin{center}%
+\parbox[c][\textboxheight][c]{\textboxwidth}{% actual text box
+\begin{center}%
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+% The actual text is here. As you see, there is a linebreak. If you like it, keep it, else delete it.
+%
+\begin{\selectedfontsize}\textit{\color{Fontcolor}\vspace{0.3em}% Make a bit more vertical line space, depending on the fontsize
+\nametitle\ \prename\\\surname}% Here we insert the data from the address list. See chopline command
+\end{\selectedfontsize}%
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+\end{center}%
+}% parbox textbox
+\end{center}%
+\hskip -0.45\dimexpr\backgroundwidth plus 1fill\relax%
+\mbox{}\unskip%
+}% parbox helper box
+}% mbox no line break
+\hspace*{-0.5in}%
+\hfill%
+\mbox{}%
+\vskip -0.5in plus 1fill minus 1fill\relax% prevent overfull and center
+}% parbox page content
+\hspace*{-0.75in}\hfill\mbox{}% prevent overfull and center
+}%else
+\vskip 0pt% create a paragraph break
+\fi%
+\ifmore\repeat%
+\closein\quelle%
+\end{document}
